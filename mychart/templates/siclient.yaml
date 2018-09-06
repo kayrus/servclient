@@ -1,0 +1,68 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: siclient-{{ .Chart.Version | replace "." "-" }}
+  labels:
+    component: si
+    role: client
+    version: {{ .Chart.Version | replace "." "-" }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        component: si
+        role: client
+        version: {{ .Chart.Version | replace "." "-" }}
+    spec:
+      affinity:
+        # prefer to run pods on the same nodes that run server components
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: component
+                operator: In
+                values:
+                - si
+              - key: role
+                operator: In
+                values:
+                - server
+              - key: version
+                operator: In
+                values:
+                - {{ .Chart.Version | replace "." "-" }}
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - name: siclient
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        command:
+        - /opt/siclient
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+            scheme: HTTP
+          timeoutSeconds: 1
+          successThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 3
+          timeoutSeconds: 2
+        imagePullPolicy: Always
+        env:
+        - name: APP_URL
+          value: http://siserver-{{ .Chart.Version | replace "." "-" }}:8080
+        ports:
+        - name: http
+          containerPort: 8081
+          protocol: TCP

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: siserver-{{ .Chart.Version | replace "." "-" }}
+  labels:
+    component: si
+    role: server
+    version: {{ .Chart.Version | replace "." "-" }}
+spec:
+  selector:
+    component: si
+    role: server
+    version: {{ .Chart.Version | replace "." "-" }}
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP

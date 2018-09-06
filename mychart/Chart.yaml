@@ -1,0 +1,4 @@
+apiVersion: v1
+description: Help chart for the client/server app
+name: servclient
+version: v1
