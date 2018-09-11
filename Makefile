@@ -2,6 +2,9 @@ APP_NAME=servclient
 DOCKER_REPO=kayrus
 TAG=v1
 
+export GOOS=linux
+export GOARCH=amd64
+
 build:
 	CGO_ENABLED=0 GOPATH=$(PWD) go build -o siclient client
 	CGO_ENABLED=0 GOPATH=$(PWD) go build -o siserver server
